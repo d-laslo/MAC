@@ -23,6 +23,7 @@ public:
     Matrix(uint64_t num_row, uint64_t num_column);
     Matrix(const Matrix& other);
     //Matrix(Matrix&& other);
+    ~Matrix();
 
     //transpose the matrix
     Matrix& T() const;

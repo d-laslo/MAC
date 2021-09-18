@@ -29,6 +29,14 @@ Matrix::Matrix(const Matrix& other)
     }
 }
 
+Matrix::~Matrix()
+{   
+    for (uint64_t i = 0; i < num_row; i++) {
+        delete[] matrix[i];
+    }
+    delete[] matrix;
+}
+
 type** Matrix::matrix_init()
 {
     type** new_matrix = new type*[num_row];
@@ -74,7 +82,7 @@ Matrix& Matrix::operator*(const Matrix& other) const
 
     auto tmp_matrix = other.T();
     Matrix* result = new Matrix(this->num_row, other.num_column);
-    
+
     std::vector<type*> vectors;
     for (uint64_t i = 0; i < this->num_row; i++) {
         for (uint64_t j = 0; j < other.num_column; j++) {
