@@ -3,6 +3,8 @@
 #include "source.hpp"
 #include <cstdint>
 #include <algorithm>
+#include <numeric>
+#include <vector>
 
 
 using type = uint64_t;
@@ -23,7 +25,8 @@ public:
     //Matrix(Matrix&& other);
 
     //transpose the matrix
-    Matrix& T();
+    Matrix& T() const;
 
-    Matrix& operator+(const Matrix& other);
+    Matrix& operator+(const Matrix& other) const;
+    Matrix& operator*(const Matrix& other) const;
 };

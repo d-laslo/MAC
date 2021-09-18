@@ -38,7 +38,7 @@ type** Matrix::matrix_init()
     return new_matrix;
 }
 
-Matrix& Matrix::T()
+Matrix& Matrix::T() const 
 {
     Matrix* transpose_matrix = new Matrix(num_column, num_row);
 
@@ -50,7 +50,7 @@ Matrix& Matrix::T()
     return *transpose_matrix;
 }
 
-Matrix& Matrix::operator+(const Matrix& other)
+Matrix& Matrix::operator+(const Matrix& other) const
 {
     if ( (this->num_row != other.num_row) || (this->num_column != other.num_column) ) {
         throw -1;
@@ -64,4 +64,28 @@ Matrix& Matrix::operator+(const Matrix& other)
     }
 
     return *result;
+}
+
+Matrix& Matrix::operator*(const Matrix& other) const
+{
+    if (this->num_column != other.num_row) {
+        throw -1;
+    }
+
+    auto tmp_matrix = other.T();
+    Matrix* result = new Matrix(this->num_row, other.num_column);
+    
+    std::vector<type*> vectors;
+    for (uint64_t i = 0; i < this->num_row; i++) {
+        for (uint64_t j = 0; j < other.num_column; j++) {
+            vectors[0] = this->matrix[i];
+            vectors[1] = tmp_matrix.matrix[j];
+            result->matrix[i][j] = std::accumulate(ALL(vectors), (type)0, 
+                [](auto a, auto b)
+                {
+                    return a + b[0] * b[1];
+                }
+            );
+        }
+    }
 }
