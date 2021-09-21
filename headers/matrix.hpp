@@ -12,11 +12,11 @@ using type = uint64_t;
 class Matrix
 {
 private:
-    type** matrix;
+    std::vector<std::vector<type>> matrix;
     uint64_t num_row;
     uint64_t num_column;
 
-    type** matrix_init();
+    void matrix_init();
 public:
     Matrix();
     Matrix(uint64_t size);
@@ -25,10 +25,13 @@ public:
     //Matrix(Matrix&& other);
     ~Matrix();
 
+    std::vector<std::vector<type>>::iterator begin();
+    std::vector<std::vector<type>>::iterator end();
+
     //transpose the matrix
     Matrix& T() const;
 
     Matrix& operator+(const Matrix& other) const;
     Matrix& operator*(const Matrix& other) const;
-    type*& operator[](uint64_t index);
+    std::vector<type>& operator[](uint64_t index);
 };
