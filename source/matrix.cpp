@@ -97,3 +97,11 @@ Matrix& Matrix::operator*(const Matrix& other) const
         }
     }
 }
+
+type*& Matrix::operator[](uint64_t index)
+{
+    if (index > num_row) {
+        throw -1;
+    } 
+    return matrix[index];
+}

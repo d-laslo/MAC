@@ -30,4 +30,5 @@ public:
 
     Matrix& operator+(const Matrix& other) const;
     Matrix& operator*(const Matrix& other) const;
+    type*& operator[](uint64_t index);
 };
