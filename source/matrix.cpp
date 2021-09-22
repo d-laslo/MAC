@@ -38,7 +38,7 @@ Matrix::~Matrix()
 
 void Matrix::matrix_init()
 {
-    new std::vector<std::vector<type>>(num_row, std::vector<type>(num_column, 0));
+    matrix =  std::vector<std::vector<type>>(num_row, std::vector<type>(num_column, 0));
 }
 
 Matrix& Matrix::T() const 
@@ -91,6 +91,8 @@ Matrix& Matrix::operator*(const Matrix& other) const
             );
         }
     }
+
+    return *result;
 }
 
 std::vector<type>& Matrix::operator[](uint64_t index)

@@ -33,5 +33,6 @@ public:
 
     Matrix& operator+(const Matrix& other) const;
     Matrix& operator*(const Matrix& other) const;
+    // Matrix& operator=(const Matrix& other);
     std::vector<type>& operator[](uint64_t index);
 };
