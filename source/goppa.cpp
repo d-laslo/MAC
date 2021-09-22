@@ -1,13 +1,16 @@
 #include "../headers/goppa.hpp"
 
-GoppaCode::GoppaCode(type g, type p, uint64_t n): p(p), g(g), n(n) 
+GoppaCode::GoppaCode(type g, type p,uint64_t n): p(p), g(g), n(n) 
 {
     m = high_bit(p) - 1;
     t = high_bit(g) - 1;
     k = n - m * t;
     d = 2 * t + 1;
 
-    H = new Matrix(t, n);
+    // TODO добавити присвоєння через переміщення
+    H = Matrix(t, n);
+
+    L = std::vector<type> {4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13};
 
     primitive = 8;
 
@@ -44,7 +47,7 @@ type GoppaCode::mul(type multiplier1, type multiplier2)
     for (uint64_t i = 0; i < end; i++) {
         product ^= ((multiplier2 >> i) & 0x1) ? (multiplier1 << i) : 0; 
     }
-    return product;
+    return norm(product);
 }
 
 
@@ -54,9 +57,9 @@ type GoppaCode::pow(type base, type exp)
     while (exp > 0)
     {
         if (exp & 0x1) {
-            res = mod(mul(res, base), p);
+            res = mul(res, base);
         } 
-        base = mod(mul(base, base), p);
+        base = mul(base, base);
 
         exp >>= 1;
     }
@@ -67,14 +70,27 @@ type GoppaCode::pow(type base, type exp)
 
 type GoppaCode::mod(type base, type val)
 {
+    if (val == 0) {
+        throw -1;
+    }
     auto val_l = high_bit(val);
-    auto base_l = high_bit(base);
-    while (base_l >= val_l) {
-        base ^= val << (base_l - val_l);
-        base_l = high_bit(base);
+    while( base >= val ){
+        base ^= val << (high_bit(base) - val_l);
     }
 
     return base;
+}
+
+
+type GoppaCode::norm(type val) {
+    auto p_l = high_bit(p);
+    auto val_l = high_bit(val);
+    while( val_l >= p_l ){
+        val ^= p << (val_l - p_l);
+        val_l = high_bit(val);
+    }
+
+    return val;
 }
 
 
@@ -87,7 +103,6 @@ type GoppaCode::invert(type value)
         auto tmp = div(a, value);
         v[0] ^= mul(v[1], tmp);
         std::swap(v[0], v[1]);
-        //rem = a ^ mul(tmp, value);
         rem = mod(a, value);
         a = value;
         value = rem;
@@ -103,15 +118,39 @@ type GoppaCode::calc_g(type x)
     type sum = std::accumulate(ALL(g_degs), 0, 
         [x, this](auto a, auto b) 
         {
-            return a ^ this->pow(x, b); // a ^ (x << b);
+            return a ^ this->pow(x, b);
         }
     );
     sum ^= primitive;
 
-    return mod(sum, p);
+    return norm(sum); ///////////////////////////////////////////
+}
+
+void GoppaCode::generate_H() 
+{
+    std::vector<type> invert_g;
+    for (auto alpha: L) {
+        invert_g.push_back(invert(calc_g(alpha)));
+    }
+
+    std::vector<type> alpha(n, 1);
+
+    for (auto& row : H) {
+        for (uint64_t i = 0; i < n; i++) {
+            row[i] = mul(alpha[i], invert_g[i]);
+            alpha[i] = mul(alpha[i], L[i]);
+        }
+    }
 }
 
 void GoppaCode::test()
 {
-    auto tmp = calc_g(12);
+    generate_H();
+    auto tmp2 = pow(2, 1);
+    auto tmp4 = pow(2, 2);
+    auto tmp8 = pow(2, 3);
+    auto tmp3 = pow(2, 4);
+    auto tmp6 = pow(2, 5);
+    auto tmp12 = pow(2, 6);
+    auto tmp11 = pow(2, 7);
 }

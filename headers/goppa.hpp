@@ -22,13 +22,13 @@ private:
     std::vector<type> g_degs;
 
     //множина елементів із поля GF(q)
-    type* L;
+    std::vector<type> L;
 
     // Перевірочна матриця
-    Matrix* H;
+    Matrix H;
 
     // Породжуюча матриця
-    Matrix* G;
+    Matrix G;
 
     // параметри кода [n,k,d] = [n, n - mt, 2t + 1]
     uint64_t n;
@@ -50,7 +50,9 @@ private:
     type mod(type base, type val);
     type div(type divided, type divider);
     type pow(type base, type exp);
-
+    type norm(type val);
     // обчислює g(x)
     type calc_g(type x);
+
+    void generate_H();
 };
