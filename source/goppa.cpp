@@ -159,20 +159,26 @@ void GoppaCode::calculate_G()
             equation.push_back(H[row_index][element] >> (index % m));
         }
     }
-    // auto tmpt = equations[0].get_indexes(); 
+    // auto tmpt = equations[0].get_indexes 
 
     auto num_equations = m * t;
-    for (uint64_t i = 0; i < num_equations; i++) {
+    for (uint64_t i = 0; i < num_equations - 1; i++) {
         auto tmp = std::find_if(equations.begin() + i, equations.end(), [i, this](const Long& a) 
             {
-                return a.hight_bit() == (this->n - i - 1);
+                return a.hight_bit() == (this->n - i);
             }
         );
+
+        // auto tmp = std::max(equations.begin() + i, equations.end(), [i, this](const Long& a, const Long& b) 
+        //     {
+        //         return a.hight_bit() < b.hight_bit();
+        //     }
+        // );
 
         iter_swap(equations.begin() + i, tmp);
 
         for (auto itr = equations.begin() + i + 1; itr < equations.end(); itr++) {
-            if (itr->hight_bit() == (n - i - 1)) {
+            if (itr->hight_bit() == (n - i)) {
                 *itr = *itr ^ *(equations.begin() + i);
             }
         }
