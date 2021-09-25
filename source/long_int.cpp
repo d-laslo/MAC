@@ -73,6 +73,27 @@ uint64_t Long::hight_bit() const
 }
 
 
+std::vector<uint64_t> Long::get_indexes() const
+{
+    std::vector<uint64_t>* indexes = new std::vector<uint64_t>;
+
+    for (uint64_t i = 0; i < number_of_clusters_used; i++) {
+        if (number[i] == 0) {
+            continue;
+        }
+
+        auto num = number[i];
+        for (uint64_t j = max_cluster_length - 1; j >= 0 && j < -1; j--) {
+            if ( (num >> j) & 0x1 ) {
+                indexes->push_back(i * max_cluster_length + j);
+            }
+        }
+    }
+
+    return *indexes;
+}
+
+
 void Long::check(const Long& other) const 
 {
     if (this->max_number_length != other.max_number_length) {
