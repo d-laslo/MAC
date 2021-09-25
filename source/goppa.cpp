@@ -1,4 +1,5 @@
 #include "../headers/goppa.hpp"
+#include <iostream>
 
 GoppaCode::GoppaCode(type g, type p,uint64_t n): p(p), g(g), n(n) 
 {
@@ -143,14 +144,46 @@ void GoppaCode::generate_H()
     }
 }
 
+void GoppaCode::calculate_G() 
+{
+    std::vector<Long> equations(t * m, Long(n));
+    
+    uint64_t index = -1;
+    uint64_t row_index = -1;
+    for(auto& equation : equations) {
+        index++;
+        if (!(index % m)) {
+            row_index++;
+        }
+        for (uint64_t element = 0; element < n; element++) {
+            equation.push_back(H[row_index][element] >> (index % m));
+        }
+    }
+    // auto tmpt = equations[0].get_indexes(); 
+
+    auto num_equations = m * t;
+    for (uint64_t i = 0; i < num_equations; i++) {
+        auto tmp = std::find_if(equations.begin() + i, equations.end(), [i, this](const Long& a) 
+            {
+                return a.hight_bit() == (this->n - i - 1);
+            }
+        );
+
+        iter_swap(equations.begin() + i, tmp);
+
+        for (auto itr = equations.begin() + i + 1; itr < equations.end(); itr++) {
+            if (itr->hight_bit() == (n - i - 1)) {
+                *itr = *itr ^ *(equations.begin() + i);
+            }
+        }
+    }
+    auto t = 0;
+
+}
+
 void GoppaCode::test()
 {
     generate_H();
-    auto tmp2 = pow(2, 1);
-    auto tmp4 = pow(2, 2);
-    auto tmp8 = pow(2, 3);
-    auto tmp3 = pow(2, 4);
-    auto tmp6 = pow(2, 5);
-    auto tmp12 = pow(2, 6);
-    auto tmp11 = pow(2, 7);
+    calculate_G();
+    // auto t = H[0];
 }
