@@ -2,6 +2,7 @@
 #include "goppa_code_parameters.hpp"
 #include "matrix.hpp"
 #include "source.hpp"
+#include "long_int.hpp"
 #include <array>
 
 using type = uint64_t;
@@ -50,9 +51,13 @@ private:
     type mod(type base, type val);
     type div(type divided, type divider);
     type pow(type base, type exp);
+
+    // нормує елемент в полі GF(q)
     type norm(type val);
+
     // обчислює g(x)
     type calc_g(type x);
 
     void generate_H();
+    void calculate_G();
 };
