@@ -3,7 +3,7 @@
 Long::Long(__uint128_t max_len) : max_number_length(max_len)
 {
     max_cluster_length = sizeof(__uint128_t) * 8;
-    number = std::vector<__uint128_t>(max_number_length / max_cluster_length);
+    number = std::vector<__uint128_t>(max_number_length / max_cluster_length + 1);
 
     length = 0;
     length_last_cluster = max_cluster_length;
@@ -50,7 +50,9 @@ void Long::push_back(uint64_t val)
         length_last_cluster = 0;
     }
 
-    number[number_of_clusters_used - 1] ^= (val & 1) << length_last_cluster;
+    // number[number_of_clusters_used - 1] ^= (val & 1) << length_last_cluster;
+    number[number_of_clusters_used - 1] <<= 1;//
+    number[number_of_clusters_used - 1] ^= (val & 1); 
     length++;
     length_last_cluster++;
 }
@@ -63,7 +65,7 @@ uint64_t Long::hight_bit() const
         cluster_index++;
         for (uint64_t i = max_cluster_length - 1; (i >= 0) && (i < -1); i--) {
             if ( (cluster >> i) & 1 ) {
-                return max_number_length - cluster_index * max_cluster_length - max_cluster_length + i;
+                return i + (length / max_cluster_length - cluster_index) * max_cluster_length + 1;
             }
         }
     }
