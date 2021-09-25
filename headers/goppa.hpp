@@ -4,6 +4,8 @@
 #include "source.hpp"
 #include "long_int.hpp"
 #include <array>
+#include <random>
+#include <cmath>
 
 using type = uint64_t;
 
@@ -29,7 +31,7 @@ private:
     Matrix H;
 
     // Породжуюча матриця
-    Matrix G;
+    std::vector<type> G;
 
     // параметри кода [n,k,d] = [n, n - mt, 2t + 1]
     uint64_t n;
@@ -37,6 +39,11 @@ private:
     uint64_t d;
     uint64_t m; // q = 2^m
     uint64_t t; // deg(g)
+
+
+    //елементи потрібні для генерації випадкових чисел
+    std::random_device rd;
+    std::uniform_int_distribution<type> dist;
 public: 
     GoppaCode();
     GoppaCode(type g, type p, uint64_t n);
@@ -51,6 +58,8 @@ private:
     type mod(type base, type val);
     type div(type divided, type divider);
     type pow(type base, type exp);
+
+    type get_random_alpha();
 
     // нормує елемент в полі GF(q)
     type norm(type val);
