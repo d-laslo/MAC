@@ -1,5 +1,4 @@
 #include "../headers/goppa.hpp"
-#include <iostream>
 
 GoppaCode::GoppaCode(type g, type p,uint64_t n): p(p), g(g), n(n) 
 {
@@ -10,6 +9,10 @@ GoppaCode::GoppaCode(type g, type p,uint64_t n): p(p), g(g), n(n)
 
     // TODO добавити присвоєння через переміщення
     H = Matrix(t, n);
+
+    G = std::vector<type>(n);
+    // !!!! 
+    dist = std::uniform_int_distribution<type> (1, (uint64_t)std::pow(2, m) - 1);
 
     L = std::vector<type> {4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13};
 
@@ -69,6 +72,12 @@ type GoppaCode::pow(type base, type exp)
 }
 
 
+type GoppaCode::get_random_alpha()
+{
+    return dist(rd);
+}
+
+
 type GoppaCode::mod(type base, type val)
 {
     if (val == 0) {
@@ -124,7 +133,7 @@ type GoppaCode::calc_g(type x)
     );
     sum ^= primitive;
 
-    return norm(sum); ///////////////////////////////////////////
+    return norm(sum); 
 }
 
 void GoppaCode::generate_H() 
@@ -159,32 +168,63 @@ void GoppaCode::calculate_G()
             equation.push_back(H[row_index][element] >> (index % m));
         }
     }
-    // auto tmpt = equations[0].get_indexes 
-
+    
     auto num_equations = m * t;
+
+    // приводимо систему рівнянь до трикутного вигляду
     for (uint64_t i = 0; i < num_equations - 1; i++) {
-        auto tmp = std::find_if(equations.begin() + i, equations.end(), [i, this](const Long& a) 
+        auto tmp = std::max_element(equations.begin() + i, equations.end(), [i, this](const Long& a, const Long& b) 
             {
-                return a.hight_bit() == (this->n - i);
+                return a.hight_bit() < b.hight_bit();
             }
         );
 
-        // auto tmp = std::max(equations.begin() + i, equations.end(), [i, this](const Long& a, const Long& b) 
-        //     {
-        //         return a.hight_bit() < b.hight_bit();
-        //     }
-        // );
-
+        auto hight_bit = tmp->hight_bit();
         iter_swap(equations.begin() + i, tmp);
 
         for (auto itr = equations.begin() + i + 1; itr < equations.end(); itr++) {
-            if (itr->hight_bit() == (n - i)) {
+            if (itr->hight_bit() == hight_bit) {
                 *itr = *itr ^ *(equations.begin() + i);
             }
         }
     }
-    auto t = 0;
+    
+    // заповнення матриці G
+    for (auto itr = equations.end() - 1; itr >= equations.begin(); itr--) {
+        auto indexes = itr->get_indexes();
+        
+        // знаходимо індекси всіх незаповнених елементів матриці G
+        std::vector<uint64_t> null_indexes;
+        for (auto index : indexes) {
+            if (G[index] == 0) {
+                null_indexes.push_back(index);
+            }
+        }
 
+        for (auto index : null_indexes) {
+            G[index] = get_random_alpha();// ? випадкове заповнення
+        }
+
+        // перший незаповнений елемент є сумою всіх інших елементів у строкі
+        G[null_indexes[0]] = std::accumulate(ALL(indexes), 0, [this, &null_indexes](auto a, auto b) 
+            {
+                return a ^ (null_indexes[0] == b ? 0: G[b]);
+            }
+        );                                                 
+
+        // якщо сума всіх елементів, окрім першого незаповненого рівняється 0,
+        // тоді має існувати, як мінімум два незаповнених елементи, у такому разі
+        // достатньо перегенерувати другий незаповнений елемент, і перерахувати перший незаповнений елемент
+        if (G[null_indexes[0]] == 0) {
+            uint64_t tmp = 0;
+            do{
+                tmp = get_random_alpha(); // ? випадкове заповнення
+            }
+            while (G[null_indexes[1]] == tmp);
+            G[null_indexes[0]] = G[null_indexes[1]] ^ tmp;
+            G[null_indexes[1]] = tmp;
+        }
+    }
 }
 
 void GoppaCode::test()
