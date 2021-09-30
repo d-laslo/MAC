@@ -2,10 +2,14 @@
 
 Long::Long(__uint128_t max_len) : max_number_length(max_len)
 {
-    max_cluster_length = sizeof(__uint128_t) * 8;
-    number = std::vector<__uint128_t>(max_number_length / max_cluster_length + 1);
+    max_cluster_length = sizeof(ln_t) * 8;
+    num_clusters = max_number_length / max_cluster_length + 1;
+    if (!(max_number_length % max_cluster_length)) {
+        num_clusters--;
+    }
+    number = std::vector<ln_t>(num_clusters, 0);
 
-    length = 0;
+    // length = 0;
     length_last_cluster = max_cluster_length;
     number_of_clusters_used = 0;
 }
@@ -15,7 +19,8 @@ Long::Long(const Long& other)
 {
     this->max_number_length = other.max_number_length;
     this->max_cluster_length = other.max_cluster_length;
-    this->length = other.length;
+    this->num_clusters = other.num_clusters;
+    // this->length = other.length;
     this->length_last_cluster = other.length_last_cluster;
     this->number_of_clusters_used = other.number_of_clusters_used;
     this->number = other.number;
@@ -29,10 +34,23 @@ Long& Long::operator^(const Long& other) const
 
     auto& res = result->number;
 
-    for (uint64_t index = 0; index < number_of_clusters_used; index++) {
+    for (uint64_t index = 0; index < num_clusters; index++) {
         res[index] ^= other.number[index];
     }
     return *result;
+}
+
+
+bool Long::operator==(const Long& other) const
+{
+    check(other);
+    auto len = number.size();
+    for (uint64_t i = 0; i < len; i++) {
+        if (this->number[i] != other.number[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -53,7 +71,7 @@ void Long::push_back(uint64_t val)
     // number[number_of_clusters_used - 1] ^= (val & 1) << length_last_cluster;
     number[number_of_clusters_used - 1] <<= 1;//
     number[number_of_clusters_used - 1] ^= (val & 1); 
-    length++;
+    // length++;
     length_last_cluster++;
 }
 
@@ -65,7 +83,7 @@ uint64_t Long::hight_bit() const
         cluster_index++;
         for (uint64_t i = max_cluster_length - 1; (i >= 0) && (i < -1); i--) {
             if ( (cluster >> i) & 1 ) {
-                return i + (length / max_cluster_length - cluster_index) * max_cluster_length + 1;
+                return i + (num_clusters - cluster_index) * max_cluster_length + 1;
             }
         }
     }
@@ -102,10 +120,39 @@ void Long::check(const Long& other) const
     if (this->max_cluster_length != other.max_cluster_length) {
         throw -2;
     }
-    if (this->length != other.length) {
-        throw -3;
+    if (this->num_clusters != other.num_clusters) {
+        throw -2;
     }
-    if (this->number_of_clusters_used != other.number_of_clusters_used) {
-        throw -4;
+    // if (this->length != other.length) {
+    //     throw -3;
+    // }
+    // if (this->number_of_clusters_used != other.number_of_clusters_used) {
+    //     throw -4;
+    // }
+}
+
+bool Long::is_null() const
+{
+    for (auto i : number) {
+        if (i) {
+            return false;
+        }
     }
+    return true;
+}
+
+
+void Long::set_random_num()
+{
+    std::random_device rd;
+    std::uniform_int_distribution<uint64_t> dist = std::uniform_int_distribution<uint64_t> (1, 50);
+    for (auto& i : number) {
+        i = dist(rd);
+        i ^= ((__uint128_t)dist(rd)) << (sizeof(uint64_t) * 8);
+    }
+    auto it = std::prev(number.end());
+    auto shift = max_cluster_length - (max_number_length % max_cluster_length);
+    // зануляємо shift старших біт у останьому кластері
+    *it = *it << shift;
+    *it = *it >> shift;
 }

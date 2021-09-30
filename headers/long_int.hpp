@@ -2,19 +2,26 @@
 #include "defines.hpp"
 #include "source.hpp"
 #include <vector>
+#include <random>
+
+using ln_t = __uint128_t;
+// using ln_t = uint8_t;
 
 // спосіб представлення Litle Endian
 class Long
 {
 private:
     // число яке зберігаємо
-    std::vector<__uint128_t> number;
+    std::vector<ln_t> number;
 
     // максимальна довжина числа в бітах
-    __uint128_t max_number_length;
+    uint64_t max_number_length;
 
-    // наявна довжина числа в бітах
-    __uint128_t length;
+    // кількість кластерів у числі
+    uint64_t num_clusters;
+
+    // // наявна довжина числа в бітах
+    // __uint128_t length;
 
     // кількість зайнятих біт в останьому кластері
     uint64_t length_last_cluster;
@@ -32,6 +39,7 @@ public:
 
 
     Long& operator^(const Long& other) const;
+    bool operator==(const Long& other) const;
     // __uint128_t& operator[](uint64_t index);
 
     // добавляє біт в кінець послідовності
@@ -49,6 +57,9 @@ public:
     // повертає порожній масив, якщо послідовність заповнена 0 
     std::vector<uint64_t> get_indexes() const;
 
+    bool is_null() const;
+
+    void set_random_num();
 
     // Long& operator<<(__uint128_t shift) const;
     // Long& operator>>(__uint128_t shift) const;
