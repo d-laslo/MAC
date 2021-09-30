@@ -95,7 +95,7 @@ std::vector<uint64_t> Long::get_indexes() const
 {
     std::vector<uint64_t>* indexes = new std::vector<uint64_t>;
 
-    for (uint64_t i = 0; i < number_of_clusters_used; i++) {
+    for (uint64_t i = 0; i < num_clusters - 1; i++) {
         if (number[i] == 0) {
             continue;
         }
@@ -103,8 +103,15 @@ std::vector<uint64_t> Long::get_indexes() const
         auto num = number[i];
         for (uint64_t j = max_cluster_length - 1; j >= 0 && j < -1; j--) {
             if ( (num >> j) & 0x1 ) {
-                indexes->push_back(i * max_cluster_length + j);
+                indexes->push_back( max_number_length - (i + 1) * max_cluster_length + j);
             }
+        }
+    }
+
+    auto num = *std::prev(number.end());
+    for (uint64_t j = max_cluster_length - 1; j >= 0 && j < -1; j--) {
+        if ( (num >> j) & 0x1 ) {
+            indexes->push_back(j);
         }
     }
 
@@ -152,6 +159,9 @@ void Long::set_random_num()
     }
     auto it = std::prev(number.end());
     auto shift = max_cluster_length - (max_number_length % max_cluster_length);
+    if (shift == max_cluster_length) {
+        shift = 0;
+    }
     // зануляємо shift старших біт у останьому кластері
     *it = *it << shift;
     *it = *it >> shift;
