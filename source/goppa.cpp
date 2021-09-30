@@ -1,6 +1,6 @@
 #include "../headers/goppa.hpp"
 
-GoppaCode::GoppaCode(type g, type p,uint64_t n): p(p), g(g), n(n) 
+GoppaCode::GoppaCode(type g, type p, uint64_t n): p(p), g(g), n(n) 
 {
     m = high_bit(p) - 1;
     t = high_bit(g) - 1;
@@ -9,9 +9,7 @@ GoppaCode::GoppaCode(type g, type p,uint64_t n): p(p), g(g), n(n)
 
     H = Matrix(t, n);
 
-    k = 12;
     G = std::vector<Long>(n, Long(k));
-
 
     L = std::vector<type> {4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13};
 
@@ -154,7 +152,8 @@ void GoppaCode::generate_H()
 
 void GoppaCode::calculate_G() 
 {
-    std::vector<Long> equations(t * m, Long(n));
+    auto num_equations = m * t;
+    std::vector<Long> equations(num_equations, Long(n));
     
     uint64_t index = -1;
     uint64_t row_index = -1;
@@ -168,7 +167,7 @@ void GoppaCode::calculate_G()
         }
     }
     
-    auto num_equations = m * t;
+    
 
     // приводимо систему рівнянь до трикутного вигляду
     for (uint64_t i = 0; i < num_equations - 1; i++) {
@@ -209,6 +208,7 @@ void GoppaCode::calculate_G()
             G[index] = tmp;
         }
 
+        auto t = 0;
         // перший незаповнений елемент є сумою всіх інших елементів у строкі
         G[null_indexes[0]] = std::accumulate(ALL(indexes), Long(k), [this, &null_indexes](auto a, auto b) 
             {   
