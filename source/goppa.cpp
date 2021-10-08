@@ -20,6 +20,9 @@ GoppaCode::GoppaCode(type g, type p, uint64_t n): p(p), g(g), n(n)
             g_degs.push_back(i);
         }
     }
+
+    generate_H();
+    calculate_G();
 }
 
 
@@ -187,6 +190,7 @@ void GoppaCode::calculate_G()
         }
     }
     
+    
     // заповнення матриці G
     for (auto itr = equations.end() - 1; itr >= equations.begin(); itr--) {
         auto indexes = itr->get_indexes();
@@ -236,7 +240,7 @@ void GoppaCode::calculate_G()
 
 void GoppaCode::test()
 {
-    generate_H();
-    calculate_G();
+    // generate_H();
+    // calculate_G();
     // auto t = H[0];
 }
