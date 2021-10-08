@@ -46,6 +46,13 @@ public:
     GoppaCode();
     GoppaCode(type g, type p, uint64_t n);
 
+    std::vector<Long>& get_G() {return G;}
+    uint64_t get_n() {return n;}
+    uint64_t get_k() {return k;}
+    uint64_t get_d() {return d;}
+    uint64_t get_m() {return m;}
+    uint64_t get_t() {return t;}
+
     // TODO метод для тестування приватних методів 
     // потім видалити
     void test();
