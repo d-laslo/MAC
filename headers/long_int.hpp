@@ -57,13 +57,27 @@ public:
     // повертає порожній масив, якщо послідовність заповнена 0 
     std::vector<uint64_t> get_indexes() const;
 
+    // повертає true якщо усі біти 0
+    // повертає false в іншому випадку
     bool is_null() const;
 
-    void set_random_num();
+    // генерує випадковий бітовий вектор вказаної довжини
+    // якщо довжина не вказана генерує вектор випадкової довжини не більшої ніж max_number_length
+    // якщо параметер len більший ніж max_number_length, то len присвоюється значення max_number_length
+    void set_random_num(uint64_t len = 0);
 
-    // Long& operator<<(__uint128_t shift) const;
-    // Long& operator>>(__uint128_t shift) const;
+    void test();
 
 private:
     void check(const Long& other) const;
+
+    // генерує випадковий вектор довжини не більшої ніж max_number_length
+    void set_random();
+
+    // встановлює index біт в одиницю
+    // наймолодший біт знаходиться за індексом 1
+    void raise_bit(uint64_t index);
+
+    // зануляє n старших біт числа
+    void null_the_bits(uint64_t n);
 };
