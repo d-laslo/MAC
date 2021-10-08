@@ -83,7 +83,11 @@ uint64_t Long::hight_bit() const
         cluster_index++;
         for (uint64_t i = max_cluster_length - 1; (i >= 0) && (i < -1); i--) {
             if ( (cluster >> i) & 1 ) {
-                return i + (num_clusters - cluster_index) * max_cluster_length + 1;
+                return  i 
+                        + (num_clusters - cluster_index) 
+                        * max_cluster_length 
+                        + 1
+                        - (num_clusters == 1 ? max_cluster_length : 0);
             }
         }
     }
@@ -149,7 +153,7 @@ bool Long::is_null() const
 }
 
 
-void Long::set_random_num()
+void Long::set_random()
 {
     std::random_device rd;
     std::uniform_int_distribution<uint64_t> dist = std::uniform_int_distribution<uint64_t> (1, 50);
@@ -165,4 +169,67 @@ void Long::set_random_num()
     // зануляємо shift старших біт у останьому кластері
     *it = *it << shift;
     *it = *it >> shift;
+}
+
+
+void Long::set_random_num(uint64_t len)
+{
+    if (len > max_number_length) {
+        len = max_number_length;
+    }
+
+    set_random();
+    if (len) {
+        null_the_bits(max_number_length - len);
+        raise_bit(len);
+    }
+}
+
+
+void Long::raise_bit(uint64_t _index)
+{
+    uint64_t remainder = max_number_length % max_cluster_length;
+    if (_index <= remainder) {
+        number[num_clusters - 1] |= ((ln_t)1 << --_index);
+        return;
+    }
+    _index -= remainder;
+    uint64_t cluster_index = _index / max_cluster_length;
+    uint64_t index = --_index % max_cluster_length; 
+
+    
+    cluster_index = num_clusters - cluster_index - 1
+                    - ((max_cluster_length - 1) == index ? 0 : 1);
+
+    number[cluster_index] |= ((ln_t)1 << index);
+}
+
+
+void Long::null_the_bits(uint64_t n)
+{
+    if (n == 0) {
+        return;
+    }
+
+    uint64_t cluster = n / max_cluster_length;
+    uint64_t shift = --n % max_cluster_length;
+
+    for (uint64_t i = 0; i < cluster; i++) {
+        number[i] = 0;
+    }
+
+    // uint64_t shift = max_cluster_length - index;
+    if (cluster == (num_clusters - 1) ) {
+        shift = max_cluster_length - (max_number_length % max_cluster_length - shift);
+    } 
+    shift++;
+    number[cluster] = (number[cluster] << shift) >> shift;
+}
+
+
+void Long::test()
+{
+    raise_bit(1);
+    raise_bit(128);
+    raise_bit(129);
 }
