@@ -2,7 +2,7 @@ CC=g++
 FLAGS=-std=c++17 -Wall -g
 CFLAGS=$(FLAGS) -c
 
-once: obj/main obj/source obj/goppa obj/matrix obj/long_int
+once: obj/main obj/source obj/goppa obj/matrix obj/long_int obj/mcellice
 	$(CC) -o $@ $^ $(FLAGS)
 
 r: once 
@@ -21,6 +21,9 @@ obj/matrix: source/matrix.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
 obj/long_int: source/long_int.cpp
+	$(CC) -o $@ $< $(CFLAGS)
+
+obj/mcellice: source/mcellice.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
 rmall:
