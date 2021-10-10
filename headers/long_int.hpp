@@ -4,8 +4,8 @@
 #include <vector>
 #include <random>
 
-using ln_t = __uint128_t;
-// using ln_t = uint8_t;
+// using ln_t = __uint128_t;
+using ln_t = uint8_t;
 
 // спосіб представлення Litle Endian
 class Long
@@ -40,6 +40,7 @@ public:
 
     Long& operator^(const Long& other) const;
     bool operator==(const Long& other) const;
+    Long& operator=(const Long& number);
     // __uint128_t& operator[](uint64_t index);
 
     // добавляє біт в кінець послідовності
@@ -66,6 +67,12 @@ public:
     // якщо параметер len більший ніж max_number_length, то len присвоюється значення max_number_length
     void set_random_num(uint64_t len = 0);
 
+    uint64_t get_len() const {return max_number_length;}
+
+    // встановлює index біт в одиницю
+    // наймолодший біт знаходиться за індексом 1
+    void raise_bit(uint64_t index);
+
     void test();
 
 private:
@@ -73,10 +80,6 @@ private:
 
     // генерує випадковий вектор довжини не більшої ніж max_number_length
     void set_random();
-
-    // встановлює index біт в одиницю
-    // наймолодший біт знаходиться за індексом 1
-    void raise_bit(uint64_t index);
 
     // зануляє n старших біт числа
     void null_the_bits(uint64_t n);

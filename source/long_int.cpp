@@ -54,6 +54,30 @@ bool Long::operator==(const Long& other) const
 }
 
 
+Long& Long::operator=(const Long& other) 
+{
+    if (this->max_number_length < other.max_number_length) {
+        throw -1;
+    } 
+    if (this->max_cluster_length != other.max_cluster_length) {
+        throw - 2;
+    }
+    
+    // this->length_last_cluster = other.length_last_cluster;
+    this->number_of_clusters_used = other.number_of_clusters_used;
+    for (uint64_t i = 0; i < other.num_clusters - 1; i++) {
+        this->number[i] = other.number[i];
+    }
+    if ( (this->max_number_length - other.max_number_length) >=  (other.max_cluster_length - (other.max_number_length % other.max_cluster_length)))
+    {
+        this->number[other.num_clusters - 1] = other.number[other.num_clusters - 1] << (other.max_cluster_length - (other.max_number_length % other.max_cluster_length));
+    }
+    else {
+        this->number[other.num_clusters - 1] = other.number[other.num_clusters - 1] << (this->max_number_length - other.max_number_length);
+    }
+}
+
+
 // __uint128_t& Long::operator[](uint64_t index)
 // {
 //     return number[index];
@@ -167,8 +191,8 @@ void Long::set_random()
         shift = 0;
     }
     // зануляємо shift старших біт у останьому кластері
-    *it = *it << shift;
-    *it = *it >> shift;
+    *it <<= shift;
+    *it >>= shift;
 }
 
 
@@ -199,7 +223,7 @@ void Long::raise_bit(uint64_t _index)
 
     
     cluster_index = num_clusters - cluster_index - 1
-                    - ((max_cluster_length - 1) == index ? 0 : 1);
+                    - ((max_cluster_length - 1) == index ? 1 : 0);
 
     number[cluster_index] |= ((ln_t)1 << index);
 }
@@ -223,7 +247,8 @@ void Long::null_the_bits(uint64_t n)
         shift = max_cluster_length - (max_number_length % max_cluster_length - shift);
     } 
     shift++;
-    number[cluster] = (number[cluster] << shift) >> shift;
+    number[cluster] <<= shift;
+    number[cluster] >>= shift;
 }
 
 
