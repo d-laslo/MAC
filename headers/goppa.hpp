@@ -6,7 +6,7 @@
 #include <array>
 #include <cmath>
 
-
+// using type = __uint128_t;
 using type = uint64_t;
 // using type = Long;
 
