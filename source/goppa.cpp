@@ -7,9 +7,11 @@ GoppaCode::GoppaCode(type g, type p, uint64_t n): p(p), g(g), n(n)
     k = n - m * t;
     d = 2 * t + 1;
 
-    H = Matrix(t, n);
+    // H = Matrix(t, n);
+    H = std::vector<std::vector<uint64_t>> (t, std::vector<uint64_t>(n));
 
-    G = std::vector<Long>(n, Long(k));
+    // G = std::vector<Long>(n, Long(k));
+    G = std::vector<Long>(k, Long(n));
 
     L = std::vector<type> {4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13};
 
@@ -168,9 +170,7 @@ void GoppaCode::calculate_G()
         for (uint64_t element = 0; element < n; element++) {
             equation.push_back(H[row_index][element] >> (index % m));
         }
-    }
-    
-    
+    } 
 
     // приводимо систему рівнянь до трикутного вигляду
     for (uint64_t i = 0; i < num_equations - 1; i++) {
@@ -189,52 +189,94 @@ void GoppaCode::calculate_G()
             }
         }
     }
-    
-    
-    // заповнення матриці G
-    for (auto itr = equations.end() - 1; itr >= equations.begin(); itr--) {
-        auto indexes = itr->get_indexes();
-        
-        // знаходимо індекси всіх незаповнених елементів матриці G
-        std::vector<uint64_t> null_indexes;
-        for (auto index : indexes) {
-            if (G[index].is_null()) {
-                null_indexes.push_back(index);
-            }
-        }
 
-        for (auto index : null_indexes) {
-            Long tmp(k);
-            do {
-                tmp.set_random_num();
-            }while(tmp.is_null());
-
-            G[index] = tmp;
-        }
-
-        auto t = 0;
-        // перший незаповнений елемент є сумою всіх інших елементів у строкі
-        G[null_indexes[0]] = std::accumulate(ALL(indexes), Long(k), [this, &null_indexes](auto a, auto b) 
-            {   
-                if (null_indexes[0] == b) {
-                    return a;
+    std::vector<Long> G_T;
+    std::vector<std::vector<uint64_t>> transpose_indexes;
+    bool flag = false;
+    do {
+        G_T = std::vector<Long>(n, Long(k));
+        // заповнення матриці G_T, яка є транспонованою мвтрицею G 
+        for (auto itr = equations.end() - 1; itr >= equations.begin(); itr--) {
+            auto indexes = itr->get_indexes();
+            
+            // знаходимо індекси всіх незаповнених елементів матриці G
+            std::vector<uint64_t> null_indexes;
+            for (auto index : indexes) {
+                if (G_T[index].is_null()) {
+                    null_indexes.push_back(index);
                 }
-                return a ^ G[b];
             }
-        );                                                 
 
-        // якщо сума всіх елементів, окрім першого незаповненого рівняється 0,
-        // тоді має існувати, як мінімум два незаповнених елементи, у такому разі
-        // достатньо перегенерувати другий незаповнений елемент, і перерахувати перший незаповнений елемент
-        if (G[null_indexes[0]].is_null()) {
-            Long tmp(k);
-            do{
-                tmp.set_random_num();
+            for (auto index : null_indexes) {
+                Long tmp(k);
+                do {
+                    tmp.set_random_num();
+                }while(tmp.is_null());
+
+                G_T[index] = tmp;
             }
-            while (G[null_indexes[1]] == tmp);
-            G[null_indexes[0]] = G[null_indexes[1]] ^ tmp;
-            G[null_indexes[1]] = tmp;
+
+            // auto t = 0;
+            // перший незаповнений елемент є сумою всіх інших елементів у строкі
+            G_T[null_indexes[0]] = std::accumulate(ALL(indexes), Long(k), [this, &null_indexes, &G_T](auto a, auto b) 
+                {   
+                    if (null_indexes[0] == b) {
+                        return a;
+                    }
+                    return a ^ G_T[b];
+                }
+            );                                                 
+
+            // якщо сума всіх елементів, окрім першого незаповненого рівняється 0,
+            // тоді має існувати, як мінімум два незаповнених елементи, у такому разі
+            // достатньо перегенерувати другий незаповнений елемент, і перерахувати перший незаповнений елемент
+            if (G_T[null_indexes[0]].is_null()) {
+                Long tmp(k);
+                do{
+                    tmp.set_random_num();
+                }
+                while (G_T[null_indexes[1]] == tmp);
+                G_T[null_indexes[0]] = G_T[null_indexes[1]] ^ tmp;
+                G_T[null_indexes[1]] = tmp;
+            }
         }
+
+
+        ////
+        ////
+        ////
+        auto num_rows = n;
+        auto num_columns = k;
+        std::vector<std::vector<uint64_t>> indexes;
+        for (const auto& row : G_T) {
+            indexes.push_back(row.get_indexes());
+        }
+
+        transpose_indexes = std::vector<std::vector<uint64_t>>(num_columns);
+        auto tmp = num_rows - 1;
+        auto tt = num_columns - 1;
+        for (uint64_t i = 0; i < num_rows; i++){
+            for (auto el : indexes[i]) {
+                transpose_indexes[tt - el].push_back(tmp - i);
+            }
+        }
+
+        flag = false;
+        for (const auto& r : transpose_indexes) {
+            if (r.size() == 0) {
+                flag = true;
+                break;
+            }
+        }
+    }while(flag);
+
+    // auto row_indexes = transpose_indexes.begin();
+    auto g = G.begin();
+    for (const auto& row_indexes : transpose_indexes) {
+        for (auto index : row_indexes) {
+            g->raise_bit(index + 1);
+        }
+        ++g;
     }
 }
 

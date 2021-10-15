@@ -1,10 +1,11 @@
 #pragma once
 #include "goppa_code_parameters.hpp"
-#include "matrix.hpp"
+// #include "matrix.hpp"
 #include "source.hpp"
 #include "long_int.hpp"
 #include <array>
 #include <cmath>
+#include <algorithm>
 
 // using type = __uint128_t;
 using type = uint64_t;
@@ -29,7 +30,7 @@ private:
     std::vector<type> L;
 
     // Перевірочна матриця
-    Matrix H;
+    std::vector<std::vector<uint64_t>> H;
 
     // Породжуюча матриця
     std::vector<Long> G;
