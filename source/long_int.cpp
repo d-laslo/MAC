@@ -223,7 +223,7 @@ void Long::raise_bit(uint64_t _index)
 
     
     cluster_index = num_clusters - cluster_index - 1
-                    - ((max_cluster_length - 1) == index ? 1 : 0);
+                    - ((max_cluster_length - 1) == index ? 0 : 1);
 
     number[cluster_index] |= ((ln_t)1 << index);
 }
