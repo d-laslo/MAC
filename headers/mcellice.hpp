@@ -8,8 +8,11 @@
 class McEllice
 {
 private:
-    // перевірочна матриця Гоппа кода
+    // генеруюча матриця Гоппа кода
     std::vector<Long> G;
+
+    // перевірочна матриця Гоппа кода
+    std::vector<Long> H_T;
 
     // // транспонована перевірочна матриця Гоппа кода
     // std::vector<Long> G_T;
@@ -36,9 +39,12 @@ private:
     //
     uint64_t k;
 
+    uint64_t t;
+
 public:
     McEllice(type g, type p, uint64_t n);
-
+    std::vector<Long>& encrypt(const Long& data);
+    std::vector<Long>& decrypt(const Long& data);
     void savePrivateKey(std::string path);
     void savePublickKey(std::string path);
     void loadPrivateKey(std::string path);
@@ -55,7 +61,7 @@ private:
     void generate_S();
     void calculate_inv_S();
     // void calculate_transpose_G();
-    std::vector<Long>& transpose(const std::vector<Long> m);
+    // std::vector<Long>& transpose(const std::vector<Long> m);
 
     std::vector<Long>& mul_matrix(const std::vector<Long>& first, const std::vector<Long>& second);
     std::vector<Long>& mul_matrix(const std::vector<Long>& first, const std::vector<uint64_t>& second);
