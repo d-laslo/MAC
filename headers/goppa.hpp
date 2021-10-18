@@ -32,6 +32,9 @@ private:
     // Перевірочна матриця
     std::vector<std::vector<uint64_t>> H;
 
+    // Перевірочна матриця
+    std::vector<Long> H_T;
+
     // Породжуюча матриця
     std::vector<Long> G;
 
@@ -48,6 +51,7 @@ public:
     GoppaCode(type g, type p, uint64_t n);
 
     std::vector<Long>& get_G() {return G;}
+    std::vector<Long>& get_H();
     uint64_t get_n() {return n;}
     uint64_t get_k() {return k;}
     uint64_t get_d() {return d;}

@@ -168,11 +168,11 @@ void GoppaCode::calculate_G()
             row_index++;
         }
         for (uint64_t element = 0; element < n; element++) {
-            equation.push_back(H[row_index][element] >> (index % m));
+            equation.push_back(H[row_index][element] >> (m - index % m - 1));
         }
     } 
 
-    // приводимо систему рівнянь до трикутного вигляду
+    // приводимо систему рівнянь до трапецеїдального вигляду
     for (uint64_t i = 0; i < num_equations - 1; i++) {
         auto tmp = std::max_element(equations.begin() + i, equations.end(), [i, this](const Long& a, const Long& b) 
             {
@@ -193,11 +193,15 @@ void GoppaCode::calculate_G()
     std::vector<Long> G_T;
     std::vector<std::vector<uint64_t>> transpose_indexes;
     bool flag = false;
+    auto tt = equations[0].get_len() - 1;
     do {
         G_T = std::vector<Long>(n, Long(k));
         // заповнення матриці G_T, яка є транспонованою мвтрицею G 
         for (auto itr = equations.end() - 1; itr >= equations.begin(); itr--) {
             auto indexes = itr->get_indexes();
+            for (auto& ind : indexes) {
+                ind = tt - ind;
+            }
             
             // знаходимо індекси всіх незаповнених елементів матриці G
             std::vector<uint64_t> null_indexes;
@@ -270,15 +274,37 @@ void GoppaCode::calculate_G()
         }
     }while(flag);
 
-    // auto row_indexes = transpose_indexes.begin();
-    auto g = G.begin();
-    for (const auto& row_indexes : transpose_indexes) {
-        for (auto index : row_indexes) {
-            g->raise_bit(index + 1);
-        }
-        ++g;
-    }
+    // // auto row_indexes = transpose_indexes.begin();
+    // auto g = G.begin();
+    // for (const auto& row_indexes : transpose_indexes) {
+    //     for (auto index : row_indexes) {
+    //         g->raise_bit(index + 1);
+    //     }
+    //     ++g;
+    // }
+    G = transpose(G_T);
 }
+
+
+std::vector<Long>& GoppaCode::get_H()
+{
+    auto num_rows = m * t;
+    std::vector<Long> *H_ = new std::vector<Long>(num_rows, Long(n));
+    
+    uint64_t index = -1;
+    uint64_t row_index = -1;
+    for(auto& row : *H_) {
+        index++;
+        if (!(index % m)) {
+            row_index++;
+        }
+        for (uint64_t element = 0; element < n; element++) {
+            row.push_back(H[row_index][element] >> (m - index % m - 1));
+        }
+    }
+    return *H_;
+}
+
 
 void GoppaCode::test()
 {
