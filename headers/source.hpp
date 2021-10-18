@@ -1,6 +1,9 @@
 #pragma once
 #include "defines.hpp"
+#include "long_int.hpp"
 #include <string>
+#include <vector>
+
 
 template<class T>
 uint64_t high_bit(T value) 
@@ -12,4 +15,7 @@ uint64_t high_bit(T value)
         }
     }
     return 0;
-}
+};
+
+std::vector<Long>& transpose(const std::vector<Long>& m);
+std::vector<Long>& concatenation(const std::vector<Long>& first, const std::vector<Long>& second);
