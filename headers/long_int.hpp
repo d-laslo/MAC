@@ -1,6 +1,5 @@
 #pragma once
 #include "defines.hpp"
-#include "source.hpp"
 #include <vector>
 #include <random>
 
@@ -76,7 +75,7 @@ public:
     void test();
 
 private:
-    void check(const Long& other) const;
+    // void check(const Long& other) const;
 
     // генерує випадковий вектор довжини не більшої ніж max_number_length
     void set_random();
@@ -84,3 +83,5 @@ private:
     // зануляє n старших біт числа
     void null_the_bits(uint64_t n);
 };
+
+#include "source.hpp"
