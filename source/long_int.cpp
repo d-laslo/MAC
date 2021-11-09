@@ -1,5 +1,5 @@
 #include "../headers/long_int.hpp"
-
+#include <array>
 
 Long::Long(__uint128_t max_len) : max_number_length(max_len)
 {
@@ -13,6 +13,12 @@ Long::Long(__uint128_t max_len) : max_number_length(max_len)
     // length = 0;
     length_last_cluster = max_cluster_length;
     number_of_clusters_used = 0;
+}
+
+
+Long::Long(__uint128_t num, __uint128_t max_len) : Long(max_len)
+{
+    number[num_clusters - 1] = num;
 }
 
 
@@ -55,6 +61,22 @@ bool Long::operator==(const Long& other) const
 }
 
 
+bool Long::operator>(const Long& other) const
+{
+    auto th_indx = this->get_indexes();
+    auto oth_indx = other.get_indexes();
+    uint64_t i = 0;
+    while (th_indx[i] == oth_indx[i]) {
+        i++;
+    }
+
+    if (th_indx[i] > oth_indx[i]) {
+        return true;
+    }
+    return false;
+}
+
+
 Long& Long::operator=(const Long& other) 
 {
     if (this->max_number_length < other.max_number_length) {
@@ -67,7 +89,7 @@ Long& Long::operator=(const Long& other)
     // this->length_last_cluster = other.length_last_cluster;
     this->number_of_clusters_used = other.number_of_clusters_used;
     for (uint64_t i = 0; i < other.num_clusters - 1; i++) {
-        this->number[i] = other.number[i];
+        this->number[i] = other.number[i];   
     }
     if ( (this->max_number_length - other.max_number_length) >=  (other.max_cluster_length - (other.max_number_length % other.max_cluster_length)))
     {
@@ -76,13 +98,163 @@ Long& Long::operator=(const Long& other)
     else {
         this->number[other.num_clusters - 1] = other.number[other.num_clusters - 1] << (this->max_number_length - other.max_number_length);
     }
+
+    return *this;
 }
+
+
+Long& Long::mod_pol(const Long&& pol) const 
+{
+    auto th_indx = this->get_indexes();
+    auto pol_indx = pol.get_indexes();
+    auto* res = new Long((__uint128_t)pol.get_len());
+    if (th_indx[0] == pol_indx[0]) {
+        *res = *this ^ pol;
+    }
+    if (th_indx[0] < pol_indx[0]) {
+        *res = *this;
+    }
+
+    
+    delete res;
+    res = new Long(*this);
+
+    auto new_pol_indx = pol_indx;
+    auto len_ind = new_pol_indx.size();
+    while (th_indx[0] >= pol_indx[0]) {
+        auto shift = res->hight_bit() - pol_indx[0] - 1;
+        for(uint64_t i = 0; i < len_ind; i++) {
+            new_pol_indx[i] = pol_indx[i] + shift;
+        }
+
+        
+        auto new_pol = Long(this->max_number_length);
+        for (auto i : new_pol_indx) { 
+            new_pol.raise_bit(i + 1);
+        }
+
+        *res = *res ^ new_pol;
+        th_indx[0] = res->hight_bit() - 1;
+    }
+
+    return *res;
+}
+
+
+// Long Long::div(const Long& divider)
+// {
+//     auto res = *this;
+//     if (divider > res || divider == res) {
+//         throw -1;
+//     }
+//     Long quotient = Long(0, res.get_len());
+//     auto one = Long(1, 1);
+//     while (res > divider) {
+//         auto divided_l = res.hight_bit();
+//         auto divider_l = divider.hight_bit();
+        
+//         quotient = quotient ^ (1 << (divided_l - divider_l));
+//         res = res ^ (divider << (divided_l - divider_l));
+//     }
+
+//     return quotient;
+// }
+
+
+// Long& Long::mul(const Long& multiplier2)
+// {
+//     auto multiplier1 = *this;
+//     auto end = multiplier2.hight_bit();
+//     auto zero = Long(this->max_number_length + multiplier2.max_number_length);
+//     Long product(this->max_number_length + multiplier2.max_number_length);
+//     for (uint64_t i = 0; i < end; i++) {
+//         auto t = (multiplier2 >> i).get_indexes();
+//         product = product ^ ((t[t.size() - 1] == 0) ? (multiplier1 << i) : zero); 
+//     }
+//     return product;
+// }
+
+
+// Long& Long::norm(const Long& pol) {
+//     auto* val = new  Long(*this);
+//     auto p_l = pol.hight_bit();
+//     auto val_l = val->hight_bit();
+//     while( val_l >= p_l ){
+//         *val = *val ^ (pol << (val_l - p_l));
+//         val_l = val->hight_bit();
+//     }
+
+//     return *val;
+// }
+
+
+// Long& Long::mod(const Long& pol)
+// {
+//     auto base = new Long(*this);
+//     if (pol.is_null()) {
+//         throw -1;
+//     }
+//     auto pol_l = pol.hight_bit();
+//     while( *base > pol  || *base == pol){
+//        *base = *base ^ (pol << (base->hight_bit() - pol_l));
+//     }
+
+//     return *base;
+// }
+
+
+// Long Long::invert_pol(const Long& pol)
+// {
+//     auto value = *this;
+//     std::vector<Long> v{Long(value.get_len()), Long(1, value.get_len())};
+//     Long rem = 0;
+//     Long a = pol;
+//     do {
+//         // auto tmp = div(a, value);
+//         auto tmp = a.div(value);
+//         v[0] = v[0] ^ v[1].mul(tmp).norm(pol);
+//         std::swap(v[0], v[1]);
+//         rem = a.mod(value);
+//         a = value;
+//         value = rem;
+//     }
+//     while(!rem.is_null());
+
+//     return v[0];
+// }
 
 
 // __uint128_t& Long::operator[](uint64_t index)
 // {
 //     return number[index];
 // }
+
+
+Long& Long::operator<<(uint64_t shift) const
+{
+    auto* res = new Long(this->max_number_length + shift);
+    auto indxs = this->get_indexes();
+
+    for (auto i : indxs) {
+        res->raise_bit(i + shift);
+    }
+    return *res;
+}
+
+
+Long& Long::operator>>(uint64_t shift) const
+{
+    auto* res = new Long(this->max_number_length);
+    auto indxs = this->get_indexes();
+
+    for (auto i : indxs) {
+        if ((i - shift) < 0) {
+            break;
+        }
+        res->raise_bit(i - shift);
+    }
+    return *res;
+}
 
 
 void Long::push_back(uint64_t val)
@@ -103,21 +275,47 @@ void Long::push_back(uint64_t val)
 
 uint64_t Long::hight_bit() const
 {
-    uint64_t cluster_index = -1;
-    for (const auto& cluster: number) {
-        cluster_index++;
-        for (uint64_t i = max_cluster_length - 1; (i >= 0) && (i < -1); i--) {
-            if ( (cluster >> i) & 1 ) {
-                return  i 
-                        + (num_clusters - cluster_index) 
-                        * max_cluster_length 
-                        + 1
-                        - (num_clusters == 1 ? max_cluster_length : 0);
-            }
+    uint64_t cluster_index = 0;
+    for (; cluster_index < num_clusters; cluster_index++) {
+        if (number[cluster_index] != 0) {
+            break;
         }
+    }
+
+    // if (cluster_index == num_clusters && number[cluster_index] == 0) {
+    //     return 0;
+    // }
+
+    auto cluster = number[cluster_index];
+    for (uint64_t i = max_cluster_length - 1; (i >= 0) && (i < -1); i--) {
+        if ( (cluster >> i) & 1 ) {
+            return  i 
+                    + (num_clusters - cluster_index - 1) 
+                    * max_cluster_length 
+                    + 1
+                    - (++cluster_index == num_clusters ? 0 :(max_number_length % max_cluster_length));            }
     }
     return 0;
 }
+
+
+// uint64_t Long::hight_bit() const
+// {
+//     uint64_t cluster_index = -1;
+//     for (const auto& cluster: number) {
+//         cluster_index++;
+//         for (uint64_t i = max_cluster_length - 1; (i >= 0) && (i < -1); i--) {
+//             if ( (cluster >> i) & 1 ) {
+//                 return  i 
+//                         + (num_clusters - cluster_index - 1) 
+//                         * max_cluster_length 
+//                         + 1;
+//                         // - (num_clusters == 1 ? max_cluster_length : 0);
+//             }
+//         }
+//     }
+//     return 0;
+// }
 
 
 std::vector<uint64_t> Long::get_indexes() const
@@ -259,6 +457,21 @@ void Long::null_the_bits(uint64_t n)
     shift++;
     number[cluster] <<= shift;
     number[cluster] >>= shift;
+}
+
+
+__uint128_t Long::get_last_byte() const
+{
+    auto indx = this->get_indexes();
+
+    __uint128_t res = 0;
+    for (auto i : indx) {
+        if (i > 127) {
+            continue;
+        }
+        res ^= 1 << i;
+    }
+    return res;
 }
 
 

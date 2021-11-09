@@ -222,6 +222,8 @@ void GoppaCode::calculate_G()
 
             // auto t = 0;
             // перший незаповнений елемент є сумою всіх інших елементів у строкі
+            // ! перепеши як буде час
+            
             G_T[null_indexes[0]] = std::accumulate(ALL(indexes), Long(k), [this, &null_indexes, &G_T](auto a, auto b) 
                 {   
                     if (null_indexes[0] == b) {
@@ -229,7 +231,8 @@ void GoppaCode::calculate_G()
                     }
                     return a ^ G_T[b];
                 }
-            );                                                 
+            );      
+                                       
 
             // якщо сума всіх елементів, окрім першого незаповненого рівняється 0,
             // тоді має існувати, як мінімум два незаповнених елементи, у такому разі

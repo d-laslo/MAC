@@ -7,8 +7,8 @@
 #include <cmath>
 #include <algorithm>
 
-// using type = __uint128_t;
-using type = uint64_t;
+using type = __uint128_t;
+// using type = uint64_t;
 // using type = Long;
 
 class GoppaCode
@@ -57,6 +57,10 @@ public:
     uint64_t get_d() {return d;}
     uint64_t get_m() {return m;}
     uint64_t get_t() {return t;}
+    uint64_t get_g() {return g;}
+    uint64_t get_p() {return p;}
+    uint64_t get_primitive() {return primitive;}
+    std::vector<__uint128_t> get_L() {return L;}
 
     // TODO метод для тестування приватних методів 
     // потім видалити

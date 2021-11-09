@@ -1,9 +1,8 @@
 #include "../headers/mcellice.hpp"
-#include <iostream>
 
-McEllice::McEllice(type g, type p, uint64_t _n)
+McEllice::McEllice(type _g, type _p, uint64_t _n)
 {
-    GoppaCode code(g, p , _n);
+    GoppaCode code(_g, _p , _n);
 
     k = code.get_k();
 
@@ -11,11 +10,18 @@ McEllice::McEllice(type g, type p, uint64_t _n)
     
     t = code.get_t();
 
+    g = code.get_g();
+
+    p = code.get_p();
+
+    primitive = code.get_primitive();
+
+    L = code.get_L();
+
     G = code.get_G();
 
     H_T = transpose(code.get_H());
 
-    // auto tt = mul_matrix(G, H_T);
     
     P = std::vector<uint64_t>(n);
 
@@ -94,46 +100,46 @@ void McEllice::generate_P()
 
 void McEllice::calculate_PK()
 {
-    S = std::vector<Long>(4, Long(4));
-    S[0].raise_bit(4);
-    S[0].raise_bit(1);
+    // S = std::vector<Long>(4, Long(4));
+    // S[0].raise_bit(4);
+    // S[0].raise_bit(1);
 
-    S[1].raise_bit(3);
-    S[1].raise_bit(1);
+    // S[1].raise_bit(3);
+    // S[1].raise_bit(1);
 
-    S[2].raise_bit(3);
+    // S[2].raise_bit(3);
 
-    S[3].raise_bit(2);
-    S[3].raise_bit(1);
+    // S[3].raise_bit(2);
+    // S[3].raise_bit(1);
 
 
-    G = std::vector<Long>(4, Long(n));
-    G[0].raise_bit(11);
-    G[0].raise_bit(10);
-    G[0].raise_bit(8);
-    G[0].raise_bit(6);
-    G[0].raise_bit(3);
+    // G = std::vector<Long>(4, Long(n));
+    // G[0].raise_bit(11);
+    // G[0].raise_bit(10);
+    // G[0].raise_bit(8);
+    // G[0].raise_bit(6);
+    // G[0].raise_bit(3);
 
-    G[1].raise_bit(11);
-    G[1].raise_bit(10);
-    G[1].raise_bit(9);
-    G[1].raise_bit(8);
-    G[1].raise_bit(5);
-    G[1].raise_bit(4);
+    // G[1].raise_bit(11);
+    // G[1].raise_bit(10);
+    // G[1].raise_bit(9);
+    // G[1].raise_bit(8);
+    // G[1].raise_bit(5);
+    // G[1].raise_bit(4);
 
-    G[2].raise_bit(12);
-    G[2].raise_bit(11);
-    G[2].raise_bit(9);
-    G[2].raise_bit(8);
-    G[2].raise_bit(1);
+    // G[2].raise_bit(12);
+    // G[2].raise_bit(11);
+    // G[2].raise_bit(9);
+    // G[2].raise_bit(8);
+    // G[2].raise_bit(1);
 
-    G[3].raise_bit(12);
-    G[3].raise_bit(11);
-    G[3].raise_bit(10);
-    G[3].raise_bit(8);
-    G[3].raise_bit(7);
-    G[3].raise_bit(5);
-    G[3].raise_bit(2);
+    // G[3].raise_bit(12);
+    // G[3].raise_bit(11);
+    // G[3].raise_bit(10);
+    // G[3].raise_bit(8);
+    // G[3].raise_bit(7);
+    // G[3].raise_bit(5);
+    // G[3].raise_bit(2);
 
 
 
@@ -167,19 +173,19 @@ void McEllice::calculate_PK()
     //     index++;
     // }
 
-    P = std::vector<uint64_t>(n);
-    P[0] = 0;
-    P[1] = 2;
-    P[2] = 8;
-    P[3] = 5;
-    P[4] = 4;
-    P[5] = 1;
-    P[6] = 3;
-    P[7] = 11;
-    P[8] = 7;
-    P[9] = 9;
-    P[10] = 10;
-    P[11] = 6;
+    // P = std::vector<uint64_t>(n);
+    // P[0] = 0;
+    // P[1] = 2;
+    // P[2] = 8;
+    // P[3] = 5;
+    // P[4] = 4;
+    // P[5] = 1;
+    // P[6] = 3;
+    // P[7] = 11;
+    // P[8] = 7;
+    // P[9] = 9;
+    // P[10] = 10;
+    // P[11] = 6;
 
 
     //** множення матриці SG на матрицю P
@@ -316,7 +322,7 @@ std::vector<Long>& McEllice::mul_matrix(const std::vector<Long>& first, const st
 std::vector<Long>& McEllice::encrypt(const Long& data)
 {
     std::vector<uint64_t> sequence;
-    for (uint64_t i = 0; i < data.get_len(); i++) {
+    for (uint64_t i = 0; i < n; i++) {
         sequence.push_back(i + 1);
     }
 
@@ -326,8 +332,8 @@ std::vector<Long>& McEllice::encrypt(const Long& data)
 
 
     //! 
-    sequence[0] = 12;
-    sequence[1] = 11;
+    // sequence[0] = 12;
+    // sequence[1] = 11;
 
     auto tmp_data = std::vector<Long>(1, data);
     Long tmp_rd_vec (n);
@@ -349,7 +355,13 @@ std::vector<Long>& McEllice::decrypt(const Long& data)
     calculate_inv_P();
     auto c = mul_matrix(tmp_data, inv_P);
 
-    auto err = mul_matrix(c, H_T);
+    // auto l = Long(15, 3);
+
+    auto e = error_correction(c[0]);
+
+    // auto err = mul_matrix(c, H_T);
+
+
 
     auto conc = concatenation(transpose(G), transpose(c));
     // ромбовидна матриця
@@ -374,16 +386,267 @@ std::vector<Long>& McEllice::decrypt(const Long& data)
     // auto err = mul_matrix(c, inv_S);
     // auto tt = err[0].get_indexes();
     
-    return err;
+    return c;
 }
+
+
+Long& McEllice::error_correction(const Long& msg)
+{
+    auto vmsg = std::vector<Long> (1, msg);
+    syndrome(msg);
+    // auto St = mul_matrix(vmsg, H_T)[0];
+    // auto Stt = mul_matrix(vmsg, H_T)[0].mod_pol(Long(g, k));
+    // auto S = mul_matrix(vmsg, H_T)[0].mod_pol(Long(g, k)).get_last_byte();
+    // auto h = invert(S);
+    auto tt = 0;
+}
+
+
+Long& McEllice::syndrome(const Long& msg) 
+{
+    auto indx = msg.get_indexes();
+    std::reverse(ALL(indx));
+
+    auto pol = std::vector<__uint128_t> (high_bit(g));
+    pol[0] = primitive;
+    for (uint64_t i = 1; i < pol.size(); i++) {
+        if ((g >> i) & 1) {
+            pol[i] = 1;
+        }
+    }
+    std::reverse(ALL(pol));
+
+    // auto gg = std::vector<__uint128_t> {3, 5, 0, 1, 3};
+    // auto a = std::vector<__uint128_t> {5, 1};
+    // auto t = div(gg, a);
+
+
+    // auto tg = mul(t[0], a);
+
+    auto inverse = [this](const std::vector<__uint128_t>& element, const std::vector<__uint128_t>& pol) 
+    {
+        std::vector<std::vector<__uint128_t>> v{std::vector<__uint128_t>(1, 0), std::vector<__uint128_t>(1, 1)};
+        std::vector<__uint128_t> rem;
+        std::vector<__uint128_t> value  = element;
+        auto a = pol;
+
+        do {
+            auto t = div(a, value);
+            auto tmp = t[0];
+            rem = t[1];
+
+            auto tmp_mul = mul(v[1], tmp);
+            v[0].resize(tmp_mul.size());
+            for (auto i = 0; i < v[0].size(); i++) {
+                v[0][i] ^= tmp_mul[i];
+            }
+            std::swap(v[0], v[1]);
+            a = value;
+            value = rem;
+        } while(rem.size() > 1);
+
+        auto inv = invert(rem[0], p);
+        for (auto& i :v[1]) {
+            i = norm(mul(inv, i), p);
+        }
+        return v[1];
+    };
+
+
+
+    // auto R = std::vector<__uint128_t> {1, 2, 4, 8, 10, 7, 13, 9};
+    auto indx = msg.get_indexes();
+    std::vector<__uint128_t> R;
+    for (auto i : indx) {
+        R.push_back(L[i]);
+    }
+
+    auto S_error = std::vector<__uint128_t> (high_bit(g) - 1);
+    for (auto r: R) {
+        auto inv = inverse(std::vector<__uint128_t> {1, r}, pol);
+        std::reverse(ALL(inv));
+        for (auto i = 0; i < inv.size(); i++){
+            S_error[i] ^= inv[i];
+        }
+    }
+    std::reverse(ALL(S_error));
+
+    auto T_error = inverse(S_error, pol);
+
+    /*
+    * Зробити пошук квадратного корення
+    */
+
+
+
+   auto mini_euclid = [&]() 
+   {
+       std::vector<std::vector<__uint128_t>> v{std::vector<__uint128_t>(1, 0), std::vector<__uint128_t>(1, 1)};
+       
+   };
+}
+
+
+__uint128_t McEllice::div(__uint128_t divided, __uint128_t divider)
+{
+    if (divider >= divided) {
+        throw -1;
+    }
+    uint64_t quotient = 0;
+    while (divided > divider) {
+        uint64_t divided_l = high_bit(divided);
+        uint64_t divider_l = high_bit(divider);
+
+        quotient ^= (1 << (divided_l - divider_l));
+        divided ^= (divider << (divided_l - divider_l));
+    }
+
+    return quotient;
+}
+
+
+std::vector<std::vector<__uint128_t>> McEllice::div(std::vector<__uint128_t> divided, std::vector<__uint128_t> divider)
+{
+    if (divider.size() > divided.size()) {
+        throw -1;
+    }
+    std::vector<__uint128_t> quotient(divided.size());
+
+    uint64_t divider_l = divider.size();
+
+    auto inv = invert(divider[0], p);
+    for (auto& i : divider) {
+        i = norm(mul(i, inv), p);
+    }
+    while (divided.size() >= divider_l) {
+        uint64_t divided_l = divided.size();
+
+        auto mult = divided[0];
+        quotient[divided_l - divider_l] = norm(mul(mult, inv), p);
+
+        auto tmp = divider;
+        for (auto& i : tmp ) {
+            i = norm(mul(i, mult), p);
+        }
+        tmp.resize(tmp.size() + divided_l - divider_l);
+        for (uint64_t i = 0; i < divided_l; i++) {
+            divided[i] ^= tmp[i];
+        };
+
+        auto const first_non_zero = std::find_if(ALL(divided), [](__uint128_t i){ return i != 0; });
+        divided.erase(divided.begin(), first_non_zero);
+    }
+
+    if (divided.size() == 0) {
+        divided = std::vector<__uint128_t> (1, 0); 
+    }
+
+    std::reverse(ALL(quotient));
+    auto const first_non_zero = std::find_if(ALL(quotient), [](__uint128_t i){ return i != 0; });
+    quotient.erase(quotient.begin(), first_non_zero);
+    return std::vector<std::vector<__uint128_t>> {quotient, divided};
+}
+
+
+__uint128_t McEllice::mod(__uint128_t base, __uint128_t val)
+{
+    if (val == 0) {
+        throw -1;
+    }
+    auto val_l = high_bit(val);
+    while( base >= val ){
+        base ^= val << (high_bit(base) - val_l);
+    }
+
+    return base;
+}
+
+
+__uint128_t McEllice::norm(__uint128_t val, __uint128_t module) {
+    auto p_l = high_bit(module);
+    auto val_l = high_bit(val);
+    while( val_l >= p_l ){
+        val ^= module << (val_l - p_l);
+        val_l = high_bit(val);
+    }
+
+    return val;
+}
+
+
+__uint128_t McEllice::invert(__uint128_t value, __uint128_t module)
+{
+    std::array<uint64_t, 2> v{0, 1};
+    __uint128_t rem = 0;
+    __uint128_t a = module;
+    do {
+        auto tmp = div(a, value);
+        v[0] ^= norm(mul(v[1], tmp), module);
+        std::swap(v[0], v[1]);
+        rem = mod(a, value);
+        a = value;
+        value = rem;
+    }
+    while(rem);
+
+    return v[0];
+}
+
+
+__uint128_t McEllice::mul(__uint128_t multiplier1, __uint128_t multiplier2)
+{
+    uint64_t end = high_bit(multiplier2);
+    __uint128_t product = 0;
+    for (uint64_t i = 0; i < end; i++) {
+        product ^= ((multiplier2 >> i) & 0x1) ? (multiplier1 << i) : 0; 
+    }
+    return product ; //norm(product);
+}
+
+
+std::vector<__uint128_t> McEllice::mul(const std::vector<__uint128_t>& multiplier1_, const std::vector<__uint128_t>& multiplier2_)
+{
+
+    auto multiplier1 = multiplier1_;
+    auto multiplier2 = multiplier2_;
+
+    if (multiplier1.size() > multiplier2.size()) {
+        std::swap(multiplier1, multiplier2);
+    }
+
+    auto mult1_s = multiplier1.size();
+    auto mult2_s = multiplier2.size();
+    auto res = std::vector<__uint128_t> (mult1_s + mult2_s - 1);
+    for (auto i = 0; i < mult2_s; i++) {
+        auto tmp = multiplier1;
+        for (auto& j : tmp) {
+            j = norm(mul(j, multiplier2[i]), p);
+        }
+
+        tmp.resize(mult1_s + mult2_s - i -1);
+        
+        std::reverse(ALL(tmp));
+
+        for (auto j = 0; j < tmp.size(); j++) {
+            res[j] ^= tmp[j];
+        }
+        
+    }
+
+    // auto const first_non_zero = std::find_if(ALL(res), [](__uint128_t i){ return i != 0; });
+    // res.erase(res.begin(), first_non_zero);
+    std::reverse(ALL(res));
+    return res;
+};
 
 
 void McEllice::test() 
 {
+
     generate_S();
     generate_P();
-    // calculate_inv_S();
-    // calculate_inv_P();
+    calculate_inv_S();
+    calculate_inv_P();
     calculate_PK();
 
     Long data(k);

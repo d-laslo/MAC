@@ -32,14 +32,18 @@ private:
     uint64_t number_of_clusters_used;
     
 public:
-    Long();
+    Long(){};
     Long(__uint128_t max_len);
+    Long(__uint128_t num, __uint128_t max_len);
     Long(const Long& other);
 
 
     Long& operator^(const Long& other) const;
     bool operator==(const Long& other) const;
     Long& operator=(const Long& number);
+    bool operator>(const Long& other) const;
+    Long& operator<<(uint64_t shift) const;
+    Long& operator>>(uint64_t shift) const;
     // __uint128_t& operator[](uint64_t index);
 
     // добавляє біт в кінець послідовності
@@ -71,6 +75,17 @@ public:
     // встановлює index біт в одиницю
     // наймолодший біт знаходиться за індексом 1
     void raise_bit(uint64_t index);
+
+    Long& mod_pol(const Long&& pol) const;
+
+    __uint128_t get_last_byte() const;
+
+    // Long div(const Long& divider);
+    // Long invert_pol(const Long& pol);
+    // Long& mul(const Long& multiplier2);
+    // Long& norm(const Long& pol);
+    // Long& mod(const Long& pol);
+
 
     void test();
 

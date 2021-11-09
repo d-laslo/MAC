@@ -14,7 +14,8 @@ int main(int argc, char const *argv[])
 {
     McEllice tmp(7, 19, 12);
     tmp.test();
-    // Long tmp(500);
-    // tmp.test();
+    // Long pol(7, 4);
+    // Long tmp(2, 12);
+    // auto tt = tmp.invert_pol(pol);
     return 0;
 }
